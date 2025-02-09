@@ -52,7 +52,8 @@ def reference_path_example(mode):
     config = habitat.get_config(
         config_path="benchmark/nav/vln_r2r.yaml",
         overrides=[
-            "habitat.task.measurements.success.success_distance=0.1",
+            "habitat.task.measurements.success.success_distance=2.0",
+            "habitat.task.measurements.oracle_success.success_distance=2.0",
             "habitat.dataset.split=val_seen",
         ],
     )
@@ -98,12 +99,18 @@ def reference_path_example(mode):
                         or best_action == HabitatSimActions.stop
                     ):
                         done = True
+                        import pdb; pdb.set_trace()
                         continue
                     observations, reward, done, info = env.step(best_action)
                     save_map(observations, info, images)
                     steps += 1
+                    # if done:
+                    #     continue
+            if best_action == HabitatSimActions.stop:
+                observations, reward, done, info = env.step(best_action)
 
             print(f"Navigated to goal in {steps} steps.")
+            print(info)
             images_to_video(images, dirname, str(episode_id))
 
 
