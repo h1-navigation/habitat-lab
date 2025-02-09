@@ -533,6 +533,8 @@ class Success(Measure):
             DistanceToGoal.cls_uuid
         ].get_metric()
 
+        print(f"Success: distance_to_target: {distance_to_target}, success_distance: {self._success_distance}")
+
         if (
             hasattr(task, "is_stop_called")
             and task.is_stop_called  # type: ignore
@@ -541,6 +543,34 @@ class Success(Measure):
             self._metric = 1.0
         else:
             self._metric = 0.0
+
+
+@registry.register_measure
+class OracleSuccess(Measure):
+    r"""Oracle Success Rate (OSR). OSR = I(ONE <= goal_radius)"""
+
+    cls_uuid: str = "oracle_success"
+
+    def __init__(self, sim: Simulator, config: "DictConfig", *args: Any, **kwargs: Any):
+        self._sim = sim
+        self._config = config
+        self._success_distance = self._config.success_distance
+
+        super().__init__()
+
+    def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+        return self.cls_uuid
+
+    def reset_metric(self, episode, task, *args: Any, **kwargs: Any):
+        task.measurements.check_measure_dependencies(
+            self.uuid, [DistanceToGoal.cls_uuid]
+        )
+        self.update_metric(episode=episode, task=task, *args, **kwargs)  # type: ignore
+
+    def update_metric(self, episode, task, *args: Any, **kwargs: Any):
+        d = task.measurements.measures[DistanceToGoal.cls_uuid].get_metric()
+        print(f"OSR: d: {d}, success_distance: {self._success_distance}")
+        self._metric = float(self._metric or d < self._success_distance)
 
 
 @registry.register_measure
@@ -606,6 +636,25 @@ class SPL(Measure):
                 self._start_end_episode_distance, self._agent_episode_distance
             )
         )
+
+@registry.register_measure
+class OracleSPL(Measure):
+    """OracleSPL (Oracle Success weighted by Path Length)
+    OracleSPL = max(SPL) over all points in the agent path.
+    """
+
+    cls_uuid: str = "oracle_spl"
+
+    def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+        return self.cls_uuid
+
+    def reset_metric(self, episode, task, *args: Any, **kwargs: Any):
+        task.measurements.check_measure_dependencies(self.uuid, ["spl"])
+        self._metric = 0.0
+
+    def update_metric(self, episode, task, *args: Any, **kwargs: Any):
+        spl = task.measurements.measures["spl"].get_metric()
+        self._metric = max(self._metric, spl)
 
 
 @registry.register_measure

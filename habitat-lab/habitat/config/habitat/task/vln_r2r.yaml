@@ -9,6 +9,7 @@ defaults:
     - distance_to_goal
     - success
     - spl
+    - oracle_success
   - lab_sensors:
     - instruction_sensor
   - _self_

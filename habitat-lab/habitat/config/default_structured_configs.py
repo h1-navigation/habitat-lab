@@ -33,6 +33,7 @@ __all__ = [
     "NumStepsMeasurementConfig",
     "DistanceToGoalMeasurementConfig",
     "SuccessMeasurementConfig",
+    "OracleSuccessMeasurementConfig",
     "SPLMeasurementConfig",
     "SoftSPLMeasurementConfig",
     "DistanceToGoalRewardMeasurementConfig",
@@ -740,7 +741,16 @@ class SuccessMeasurementConfig(MeasurementConfig):
     type: str = "Success"
     success_distance: float = 0.2
 
-
+@dataclass
+class OracleSuccessMeasurementConfig(MeasurementConfig):
+    r"""
+    For Navigation tasks only, Measures 1.0 if the robot reached a success during the episode.
+    A success is defined as calling the `StopAction` when the `DistanceToGoal`
+    Measure is smaller than `success_distance`.
+    """
+    type: str = "OracleSuccess"
+    success_distance: float = 0.2
+    
 @dataclass
 class SPLMeasurementConfig(MeasurementConfig):
     r"""
@@ -2360,6 +2370,12 @@ cs.store(
     group="habitat/task/measurements",
     name="distance_to_goal_reward",
     node=DistanceToGoalRewardMeasurementConfig,
+)
+cs.store(
+    package="habitat.task.measurements.oracle_success",
+    group="habitat/task/measurements",
+    name="oracle_success",
+    node=OracleSuccessMeasurementConfig,
 )
 cs.store(
     package="habitat.task.measurements.success",
