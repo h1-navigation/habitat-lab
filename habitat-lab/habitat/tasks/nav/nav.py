@@ -533,8 +533,6 @@ class Success(Measure):
             DistanceToGoal.cls_uuid
         ].get_metric()
 
-        print(f"Success: distance_to_target: {distance_to_target}, success_distance: {self._success_distance}")
-
         if (
             hasattr(task, "is_stop_called")
             and task.is_stop_called  # type: ignore
@@ -569,7 +567,6 @@ class OracleSuccess(Measure):
 
     def update_metric(self, episode, task, *args: Any, **kwargs: Any):
         d = task.measurements.measures[DistanceToGoal.cls_uuid].get_metric()
-        print(f"OSR: d: {d}, success_distance: {self._success_distance}")
         self._metric = float(self._metric or d < self._success_distance)
 
 

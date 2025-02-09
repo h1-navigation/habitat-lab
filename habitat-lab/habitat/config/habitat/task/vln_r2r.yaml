@@ -16,3 +16,5 @@ defaults:
 
 
 type: VLN-v0
+reward_measure: "distance_to_goal_reward"
+success_measure: "spl"
